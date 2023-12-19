@@ -1,0 +1,19 @@
+| tstats count WHERE index=* NOT index IN(cim_*, splunkd, stash)
+GROUPBY sourcetype
+| fields - count
+| append
+    [| datamodel
+    | rex field=_raw "\"modelName\"\s*\:\s*\"(?<modelName>[^\"]+)\""
+    | search NOT modelName IN(Splunk_CIM_Calidation)
+    | fields modelName
+    | table modelName
+    | map maxsearches=40 search="tstats summariesonly=true count from datamodel=$modelName$ by sourcetype 
+    | eval modelName=\"$modelName$\""
+    ]
+| fillnull value="placeholder" modelName count
+|table modelName sourcetype count
+|xyseries sourcetype modelName count
+|addtotals
+|fillnull value="--" Total
+| table sourcetype Total *
+| fields - "placeholder"
