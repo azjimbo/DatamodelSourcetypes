@@ -7,7 +7,7 @@ GROUPBY sourcetype
     | search NOT modelName IN(Splunk_CIM_Calidation)
     | fields modelName
     | table modelName
-    | map maxsearches=40 search="tstats summariesonly=true count from datamodel=$modelName$ by sourcetype 
+    | map maxsearches=100 search="tstats summariesonly=true count from datamodel=$modelName$ by sourcetype 
     | eval modelName=\"$modelName$\""
     ]
 | fillnull value="placeholder" modelName count
